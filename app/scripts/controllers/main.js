@@ -19,9 +19,9 @@ angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSe
 */
 /*
   var palavraMS = {id: '', value: 'Carro', idsref: [], idLingua: 1},
-      palavraLS = {id: '', value: 'Auto', idsref: [], idLingua: 2};
+        palavraLS = {id: '', value: 'Auto', idsref: [], idLingua: 2};
 
-  DBConnnectionSerice.preparestatement(palavraMS,palavraLS,'Palavras2');
+
 
  */
 /*
@@ -34,31 +34,24 @@ angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSe
     });
 */
 
-  DBConnnectionSerice.getByIdLingua('Palavras2','idLingua',1).then(
-    function(result){
-      self.lista = []
-      result.forEach(function(element){
+  DBConnnectionSerice.getAllByLanguage(1).then(function(result){
+    self.lista = result;
+  },function (error) {});
 
-        DBConnnectionSerice.getByDefaultId('Palavras2',element.idsref[0]).then(function(res){
-          var temp = {MS: element, LS:res};
-            self.lista.push(temp);
-          console.log(temp);
 
-        },function(error){
-          console.log(error);
-        })
-
-      });
-
-    },
-    function(error){
-
-    });
 
     self.getById = function(id){
 
-    }
+    };
 
+    self.save = function () {
+      var MS = DBConnnectionSerice.createPalavra(self.objSave.MS, 1);
+      var LS = DBConnnectionSerice.createPalavra(self.objSave.LS, 2);
+
+      DBConnnectionSerice.preparestatement(MS,LS,'Palavras2').then(function(result){
+        console.log(result);
+      });
+    }
 
 });
 

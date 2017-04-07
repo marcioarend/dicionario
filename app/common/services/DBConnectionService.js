@@ -50,7 +50,6 @@
           };
 
           self._DBOpenRequest.onerror = function (e) {
-            console.log(e);
             reject(e);
           };
         }
@@ -164,7 +163,7 @@
 
       } else if (tabela === self._tables[2]) {
 
-        $q.all([setDataAndID(palavraMS),setDataAndID(palavraLS)])
+        return $q.all([setDataAndID(palavraMS),setDataAndID(palavraLS)])
           .then(function(result){
 
             return tresPassos(result[0], result[1]);
@@ -211,7 +210,6 @@
               myIndex.openCursor(keyRange).onsuccess = function (e){
                 var cursor = event.target.result;
                 if(cursor) {
-                    console.log(cursor.value);
                   returnArray.push(cursor.value);
                   cursor.continue();
                 } else {
@@ -227,7 +225,7 @@
 
 
 
-    }
+    };
 
     self.getByDefaultId = function(tabela,id){
       return $q(function(res, rej){
@@ -244,17 +242,35 @@
             rej(error);
           }
 
-
-
-
         })
 
       });
-
-
-
-
     };
+
+    self.getAllByLanguage = function(idLanguage){
+
+      return self.getByIdLingua('Palavras2','idLingua',idLanguage).then(
+        function(result){
+          var list = [];
+          result.forEach(function(element){
+            self.getByDefaultId('Palavras2',element.idsref[0]).then(function(res){
+              var temp = {MS: element, LS:res};
+              list.push(temp);
+            },function(error){
+
+            })
+
+          });
+          return list;
+        },
+        function(error){
+
+        });
+    }
+
+    self.createPalavra = function(palavra, idLingua){
+      return {id: '', value: palavra, idsref: [], idLingua: idLingua };
+    }
   }
 
 })(angular);
