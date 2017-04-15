@@ -1,15 +1,11 @@
 'use strict';
 
-/**
- * @ngdoc function
- * @name dicionarioApp.controller:MainCtrl
- * @description
- * # MainCtrl
- * Controller of the dicionarioApp
- */
-angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSerice, $timeout) {
+angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSerice, testUpperFilter ) {
 
   var self = this;
+
+
+  console.log( testUpperFilter("marcio"));
   /*
    DBConnnectionSerice.createDB("dicionario",4).then(function(resolve){
    console.log(resolve);

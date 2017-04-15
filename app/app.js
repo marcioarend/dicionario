@@ -5,7 +5,8 @@
   angular.module('dicionarioApp', [
       'ngAnimate',
       'ngSanitize',
-      'ngTouch'
+      'ngTouch',
+      'arend.commons'
     ])
 
 
