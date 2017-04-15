@@ -1,9 +1,9 @@
 'use strict';
 
-angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSerice, testUpperFilter ) {
+angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSerice, testUpperFilter,$parse ) {
 
   var self = this;
-
+  self.objSave = {MS:{value:''},LS:{value:''}};
 
   console.log( testUpperFilter("marcio"));
   /*
@@ -13,41 +13,55 @@ angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSe
    console.log(reject);
    });
 */
-/*
-  var palavraMS = {id: '', value: 'Carro', idsref: [], idLingua: 1},
-        palavraLS = {id: '', value: 'Auto', idsref: [], idLingua: 2};
 
-
-
- */
-/*
-  DBConnnectionSerice.getAll('Palavras2').then(
-    function(result){
+  function loadAll(){
+    DBConnnectionSerice.getAllByLanguage(1).then(function(result){
       self.lista = result;
-    },
-    function(error){
-
-    });
-*/
-
-  DBConnnectionSerice.getAllByLanguage(1).then(function(result){
-    self.lista = result;
-  },function (error) {});
+    },function (error) {});
+    self.objSave = {MS:{value:''},LS:{value:''}};
+  }
 
 
 
-    self.getById = function(id){
+    self.save = function () {
+
+      var MS = $parse("id")(self.objSave.MS);
+      var LS = $parse("id")(self.objSave.LS);
+      if (LS && MS) {
+         DBConnnectionSerice.updatePalavra(self.objSave.MS).then(function (data) {
+            DBConnnectionSerice.updatePalavra (self.objSave.LS).then(function(data2){
+              loadAll();
+             });
+         });
+      } else {
+        MS = DBConnnectionSerice.createPalavra(self.objSave.MS.value, 1);
+        LS = DBConnnectionSerice.createPalavra(self.objSave.LS.value, 2);
+        DBConnnectionSerice.preparestatement(MS,LS,'Palavras2').then(function(result){
+          loadAll();
+        });
+      }
+
+      loadAll();
 
     };
 
-    self.save = function () {
-      var MS = DBConnnectionSerice.createPalavra(self.objSave.MS, 1);
-      var LS = DBConnnectionSerice.createPalavra(self.objSave.LS, 2);
+    self.edit = function(data){
+      self.objSave.MS = data.MS;
+      self.objSave.LS = data.LS;
+    };
 
-      DBConnnectionSerice.preparestatement(MS,LS,'Palavras2').then(function(result){
-        console.log(result);
-      });
-    }
+    self.delete = function(data){
+      self.objSave.MS = data.MS;
+      self.objSave.LS = data.LS;
+
+      DBConnnectionSerice.delete(self.objSave.MS).then(function(data){
+        DBConnnectionSerice.delete(self.objSave.LS).then(function(res){
+          loadAll();
+        })
+      })
+    };
+
+    loadAll()
 
 });
 

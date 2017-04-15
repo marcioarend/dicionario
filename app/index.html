@@ -30,10 +30,10 @@
 
       <div class="row">
         <div class="col-xs-6">
-          <input class="form-control" ng-model="ctrl.objSave.MS">
+          <input class="form-control" ng-model="ctrl.objSave.MS.value">
         </div>
         <div class="col-xs-6">
-          <input class="form-control" ng-model="ctrl.objSave.LS">
+          <input class="form-control" ng-model="ctrl.objSave.LS.value">
         </div>
         <div class="col-xs-12 text-center" style="margin-top: 10px;">
           <a class="btn btn-primary" ng-click="ctrl.save()">
@@ -56,11 +56,11 @@
               <p  style="margin-top: 5px;"> {{::element.LS.value  }}</p>
             </div>
             <div class="col-xs-6 text-center">
-              <a class="btn btn-info" ng-click="ctrl.edit()">
+              <a class="btn btn-info" ng-click="ctrl.edit(element)">
                 <i class="glyphicon glyphicon-pencil "></i>
                 <span class="hidden-xs"> Edit</span>
               </a>
-              <a class="btn btn-warning" ng-click="ctrl.delete()">
+              <a class="btn btn-warning" ng-click="ctrl.delete(element)">
                 <i class="glyphicon glyphicon-floppy-remove"></i>
                 <span class="hidden-xs"> Delete</span>
               </a>
@@ -73,13 +73,7 @@
 
       </div>
 
-      <div class="row">
-        <div class="col-xs-12">
-          <test  name="Marcio" adresse="teste"></test>
 
-        </div>
-      </div>
-    </div>
     </div>
 
 

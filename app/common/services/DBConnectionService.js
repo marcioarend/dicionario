@@ -85,7 +85,7 @@
     function save(obj, tabela, update) {
       return $q(function (res, rej) {
         self.open().then(function (db) {
-          $log.info("salvando", db);
+          $log.info("salvando", obj);
           var store = crateObjStore(db, tabela);
 
           var request = {};
@@ -113,6 +113,26 @@
       });
     };
 
+
+    self.delete = function (palavra) {
+      return $q(function (res, rej) {
+          self.open().then(function(db){
+            $log.info("apagando", palavra);
+            var store = crateObjStore(db,"Palavras2");
+
+            var objectStoreRequest = store.delete(palavra.id);
+
+            objectStoreRequest.onsuccess = function(event) {
+              res(event);
+            };
+
+            objectStoreRequest.onerror = function(error){
+              rej(error);
+            }
+          });
+      });
+    };
+
     function tresPassos(palavraMS, palavraLS) {
       if (isInlist(palavraMS.idsref, palavraLS.id)) {
         palavraMS.idsref.push(palavraLS.id);
@@ -124,6 +144,12 @@
         save(palavraLS, 'Palavras2', palavraLS.update);
         save(palavraMS, 'Palavras2', palavraMS.update);
 
+    };
+
+
+    self.updatePalavra = function(palavra){
+        setDataAndID(palavra);
+        return save(palavra, 'Palavras2', palavra.update);
     };
 
     function isInlist(elementos, elemento) {
@@ -217,13 +243,9 @@
                 }
               };
 
-
             })
 
       });
-
-
-
 
     };
 
@@ -266,7 +288,7 @@
         function(error){
 
         });
-    }
+    };
 
     self.createPalavra = function(palavra, idLingua){
       return {id: '', value: palavra, idsref: [], idLingua: idLingua };
