@@ -6,9 +6,9 @@
 
 
   angular.module('dicionarioApp').service('DBConnnectionSerice', DBConnnection);
-  DBConnnection.$inject = ['$window', '$q', '$log', '$timeout'];
+  DBConnnection.$inject = ['$window', '$q', '$log', '$timeout' ,'LoadBO' , 'md5'];
 
-  function DBConnnection($window, $q, $log, $timeout) {
+  function DBConnnection($window, $q, $log, $timeout,LoadBO, md5) {
     var self = this;
     self._dbName = "dicionario";
     self._tables = ['Linguas', 'Palavras','Palavras2'];
@@ -27,7 +27,7 @@
       return $q(function (resolve, reject) {
 
         if (self._db !== null) {
-          reject("Bancdo de dados ja foi criado");
+          reject("Banco de dados ja foi criado");
         } else {
           self._DBOpenRequest = $window.indexedDB.open(self._dbName, self._dbVersion);
 
@@ -38,14 +38,17 @@
 
           self._DBOpenRequest.onupgradeneeded = function (event) {
             var db = event.target.result;
+            var objStores = LoadBO.load();
 
+            objStores.forEach(function(value){
+                db.deleteObjectStore(value.objStore.objectStore);
+                var objStore = db.createObjectStore(value.objStore.objectStore, value.objStore.key);
+                var keys = value.objStore.indexKeys;
+                keys.forEach(function(valueKey){
+                   objStore.createIndex(valueKey.indexName,valueKey.keypath,valueKey.config);
+                });
 
-            //db.createObjectStore(self._tables[0], {keyPath: "id", autoIncrement: true});
-            db.deleteObjectStore("Palavras2");
-            var palavra = db.createObjectStore("Palavras2", {keyPath: "id"});
-
-            palavra.createIndex("idsref","idsref", {unique:false,multiEntry:true});
-            palavra.createIndex("idLingua","idLingua", {unique:false,multiEntry:true});
+            });
 
           };
 
@@ -85,25 +88,18 @@
     function save(obj, tabela, update) {
       return $q(function (res, rej) {
         self.open().then(function (db) {
-          $log.info("salvando", obj);
           var store = crateObjStore(db, tabela);
-
           var request = {};
-
           if (update) {
             request = store.put(obj);
           } else {
             request = store.add(obj);
           }
-
           request.onsuccess = function (e) {
             res(e);
           };
-          request.oncomplete = function (e) {
-            res(e);
-          };
           request.onerror = function (e) {
-            rej(e);
+            rej(obj);
           }
 
         }, function (error) {
@@ -117,15 +113,11 @@
     self.delete = function (palavra) {
       return $q(function (res, rej) {
           self.open().then(function(db){
-            $log.info("apagando", palavra);
-            var store = crateObjStore(db,"Palavras2");
-
+            var store = crateObjStore(db,palavra.objStore.objectStore);
             var objectStoreRequest = store.delete(palavra.id);
-
             objectStoreRequest.onsuccess = function(event) {
               res(event);
             };
-
             objectStoreRequest.onerror = function(error){
               rej(error);
             }
@@ -141,65 +133,69 @@
         palavraLS.idsref.push(palavraMS.id);
       }
 
-        save(palavraLS, 'Palavras2', palavraLS.update);
-        save(palavraMS, 'Palavras2', palavraMS.update);
-
+      return $q.all([save(palavraLS, palavraLS.objStore.objectStore, palavraLS.update),save(palavraMS, palavraLS.objStore.objectStore, palavraMS.update)])
+          .then(function (result) {
+            return result;
+          }).catch(function (error){
+            $log.error("Trespassos",error);
+        });
     };
 
 
     self.updatePalavra = function(palavra){
         setDataAndID(palavra);
-        return save(palavra, 'Palavras2', palavra.update);
+        return save(palavra, palavra.objStore.objectStore, palavra.update);
     };
 
     function isInlist(elementos, elemento) {
       return elementos.indexOf(elemento);
     }
 
-    function setDataAndID(obj) {
+    function setDataAndID(obj,pause) {
+      var defer = $q.defer();
+        var d,n;
+        getMillisecons(pause).then(function(time){
 
-      // O timeout foi montado aki pra evitar
-      // que as duas palavras recebam o mesmo ID
-      return $timeout(function () {
-        var d = new Date();
-        var n = d.getTime();
-        if (obj.id === "") {
-          obj.id = n;
-          obj.updateDate = d;
-          obj.created = d;
-          obj.sync = false;
-          obj.update = false;
-        } else {
-          obj.updateDate = d;
-          obj.sync = false;
-          obj.update = true;
-        }
-        return obj;
-      }, 100);
+          n = md5.createHash(time.mili + obj.word);
+          console.log(n);
+          d = time.date;
+          if (obj.id === "") {
+            obj.id = n;
+            obj.updateDate = d;
+            obj.created = d;
+            obj.sync = false;
+            obj.update = false;
+          } else {
+            obj.updateDate = d;
+            obj.sync = false;
+            obj.update = true;
+          }
+          defer.resolve(obj);
+        });
 
-
-
-
+        return defer.promise
     }
 
-    self.preparestatement = function (palavraMS, palavraLS, tabela) {
+    function getMillisecons(pause) {
+      return $timeout(function(){
+        var d = new Date();
+        var n = d.getTime();
+        return {date:d, mili:n}
+      },pause);
+    }
+
+    self.preparestatement = function (palavraMS, palavraLS) {
       var update = true;
 
-      if (tabela === self._tables[0]) {
-
-      } else if (tabela === self._tables[2]) {
-
-        return $q.all([setDataAndID(palavraMS),setDataAndID(palavraLS)])
-          .then(function(result){
-
-            return tresPassos(result[0], result[1]);
-          })
-          .catch(function(error){
-
+      return $q.all([setDataAndID(palavraMS,50), setDataAndID(palavraLS,50)])
+        .then(function (result) {
+          return tresPassos(result[0], result[1]).then(function(data){
+            return data;
           });
-
-      }
-
+        })
+        .catch(function (error) {
+          $log.error(error);
+        });
     };
 
     self.getAll = function(tabela){
@@ -253,29 +249,24 @@
       return $q(function(res, rej){
         self.open().then(function(db){
           var store = crateObjStore(db, tabela);
-
           var objStoreRequest = store.get(id);
-
           objStoreRequest.onsuccess  = function(response){
             res(response.target.result)
           };
-
           objStoreRequest.onerror = function (error){
             rej(error);
           }
-
         })
-
       });
     };
 
     self.getAllByLanguage = function(idLanguage){
-
-      return self.getByIdLingua('Palavras2','idLingua',idLanguage).then(
+      var boWord = new BOWords();
+      return self.getByIdLingua(boWord.objStore.objectStore,"idLingua",idLanguage).then(
         function(result){
           var list = [];
           result.forEach(function(element){
-            self.getByDefaultId('Palavras2',element.idsref[0]).then(function(res){
+            self.getByDefaultId(boWord.objStore.objectStore,element.idsref[0]).then(function(res){
               var temp = {MS: element, LS:res};
               list.push(temp);
             },function(error){
@@ -290,9 +281,7 @@
         });
     };
 
-    self.createPalavra = function(palavra, idLingua){
-      return {id: '', value: palavra, idsref: [], idLingua: idLingua };
-    }
+
   }
 
 })(angular);

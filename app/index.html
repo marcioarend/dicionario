@@ -30,10 +30,10 @@
 
       <div class="row">
         <div class="col-xs-6">
-          <input class="form-control" ng-model="ctrl.objSave.MS.value">
+          <input class="form-control" ng-model="ctrl.objSave.MS.word">
         </div>
         <div class="col-xs-6">
-          <input class="form-control" ng-model="ctrl.objSave.LS.value">
+          <input class="form-control" ng-model="ctrl.objSave.LS.word">
         </div>
         <div class="col-xs-12 text-center" style="margin-top: 10px;">
           <a class="btn btn-primary" ng-click="ctrl.save()">
@@ -50,10 +50,10 @@
         <div class="col-xs-12">
         <div class="row" ng-repeat="element in ctrl.lista ">
             <div class="col-xs-3" >
-              <p  style="margin-top: 5px;"> {{::element.MS.value }}</p>
+              <p  style="margin-top: 5px;"> {{::element.MS.word }}</p>
             </div>
             <div class="col-xs-3">
-              <p  style="margin-top: 5px;"> {{::element.LS.value  }}</p>
+              <p  style="margin-top: 5px;"> {{::element.LS.word  }}</p>
             </div>
             <div class="col-xs-6 text-center">
               <a class="btn btn-info" ng-click="ctrl.edit(element)">
@@ -90,6 +90,8 @@
     <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
     <script src="bower_components/angular-touch/angular-touch.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="bower_components/underscore/underscore.js"></script>
+    <script src="bower_components/angular-md5/angular-md5.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -101,6 +103,10 @@
     <script src="scripts/filters/common.js"></script>
     <script src="scripts/filters/filters.js"></script>
     <script src="scripts/directive/test.js"></script>
+
+        <script src="common/BO/BO.js"></script>
+        <script src="common/BO/wordsBO.js"></script>
+        <script src="common/BO/LearnBO.js"></script>
         <!-- endbuild -->
 </body>
 

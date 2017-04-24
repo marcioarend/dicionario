@@ -6,7 +6,9 @@
       'ngAnimate',
       'ngSanitize',
       'ngTouch',
-      'arend.commons'
+      'arend.commons',
+      'BO.module',
+      'angular-md5'
     ])
 
 

@@ -1,13 +1,12 @@
 'use strict';
 
-angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSerice, testUpperFilter,$parse ) {
+angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSerice, testUpperFilter,$parse,$timeout) {
 
   var self = this;
-  self.objSave = {MS:{value:''},LS:{value:''}};
+  self.objSave = {MS:new BOWords(),LS:new BOWords()};
 
-  console.log( testUpperFilter("marcio"));
-  /*
-   DBConnnectionSerice.createDB("dicionario",4).then(function(resolve){
+/*
+   DBConnnectionSerice.createDB("dicionario",8).then(function(resolve){
    console.log(resolve);
    },function(reject){
    console.log(reject);
@@ -18,7 +17,7 @@ angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSe
     DBConnnectionSerice.getAllByLanguage(1).then(function(result){
       self.lista = result;
     },function (error) {});
-    self.objSave = {MS:{value:''},LS:{value:''}};
+    self.objSave = {MS:new BOWords(),LS:new BOWords()};
   }
 
 
@@ -34,9 +33,9 @@ angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSe
              });
          });
       } else {
-        MS = DBConnnectionSerice.createPalavra(self.objSave.MS.value, 1);
-        LS = DBConnnectionSerice.createPalavra(self.objSave.LS.value, 2);
-        DBConnnectionSerice.preparestatement(MS,LS,'Palavras2').then(function(result){
+        self.objSave.MS.idLingua = 1;
+        self.objSave.LS.idLingua = 2;
+        DBConnnectionSerice.preparestatement(self.objSave.MS,self.objSave.LS).then(function(result){
           loadAll();
         });
       }
@@ -61,7 +60,28 @@ angular.module('dicionarioApp').controller('MainCtrl', function (DBConnnectionSe
       })
     };
 
-    loadAll()
+    loadAll();
 
+
+
+  function createfakeData(){
+    var pt = ["Casa","Carro","Comida","Aluno","Metro","Trem","Casa","Carro","Comida","Aluno","Metro","Trem","Casa","Carro","Comida","Aluno","Metro","Trem","Casa","Carro","Comida","Aluno","Metro","Trem"];
+    var de = ["Haus","Auto","Essen", "Schuler","Uban","Zug","Haus","Auto","Essen", "Schuler","Uban","Zug","Haus","Auto","Essen", "Schuler","Uban","Zug","Haus","Auto","Essen", "Schuler","Uban","Zug"];
+
+    pt.forEach(function(data,index){
+      var MS = new BOWords();
+      var LS = new BOWords();
+      MS.idLingua = 1;
+      MS.word = data;
+      LS.idLingua = 2;
+      LS.word = de[index];
+      DBConnnectionSerice.preparestatement(MS,LS).then(function(result){
+        console.log(result[0]);
+        console.log(result[1]);
+      })});
+    loadAll();
+
+  }
+  //createfakeData();
 });
 
